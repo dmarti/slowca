@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8"/>
+  <title>cellular automaton thing</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"></link>
+</head>
+  <body>
+
+<div style="display:flex;justify-content:center;align-items:center;">
+  <div>
+    <table id="board"></table>
+  </div>
+</div>
+
+<script>
+
+var columns = Math.floor(window.innerWidth / 40);
+var rows = Math.floor(window.innerHeight / 45);
+
+// columns = 10;
+// rows = 10;
+
+function setup() {
+    var txt = "";
+    for (var i = 0; i<rows; i++) {
+	    txt += "<tr>";
+		for (var j = 0; j< columns; j++) {
+		    txt += "<td><iframe src=cell.html?q='";
+			txt += j + "-" + i;
+			txt += "' id = '";
+			txt += j + "-" + i;
+			txt += "'></iframe></td>";
+		}
+		txt += "<tr>";
+	}
+    var board = document.getElementById('board');
+	board.innerHTML = txt; 
+}
+
+function getMsg(msg) {
+    fields = msg.data.split(' ')
+    target = document.getElementById(fields[0]);
+	if (target) {
+	    target.contentWindow.postMessage(msg.data, '*');
+    } else {
+	    console.log(msg.data)
+	}
+}
+
+function getRandomCell() {
+    var cells = document.getElementsByTagName('iframe');
+	var n = Math.floor(Math.random() * cells.length);
+	return cells[n];
+}
+
+function doStuff() {
+   el = getRandomCell();
+   cw = el.contentWindow;
+      cw.postMessage(el.id + ' ' + columns + ' ' + rows + ' c ' + Math.random() + ' ' + Math.random(), '*');
+}
+    
+window.addEventListener('load', setup);
+window.addEventListener('message', getMsg, false);
+window.addEventListener('click', doStuff, false);
+setInterval(doStuff, 100);
+
+</script>
+  </body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8"/>
+  <title>cell</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"></link>
+</head>
+  <body>
+      <div id="cell"></div>
+
+<script>
+    var cell = document.getElementById('cell');
+	var prevMove = 'c';
+	var fs = Math.random()/4;
+    var niceness = Math.random();
+    var meanness = Math.random();
+
+    function resizeSelf(frac) {
+		var body = document.getElementsByTagName('body')[0];
+        var mw = (1-frac)/2;
+
+        cell.style.height = window.innerHeight * frac + 'px';
+        cell.style.width = window.innerWidth * frac + 'px';
+
+        cell.style.marginTop = window.innerHeight * mw + 'px';
+        cell.style.marginLeft = window.innerWidth * mw + 'px';
+
+        if (fs < 0.1) {
+		    cell.style.backgroundColor = 'black';
+			return;
+		}
+
+        var red = Math.floor((meanness - niceness) * 255);
+		var blue = Math.floor((niceness - meanness) * 255);
+        var green = Math.floor(255 - (127 * (niceness + meanness)));
+
+		cell.style.backgroundColor = 'rgb(' + red + ',' +
+		    green + ',' + blue + ')';
+	}
+
+    function randomOffset(i, m) {
+	    i = parseInt(i);
+		m = parseInt(m);
+	    var res = Math.round(Math.random() * 2 + i - 1);
+		if (res >= m) {
+		    res = i;
+		}
+		return Math.abs(res)
+	}
+
+    function getTarget(orig, maxX, maxY) {
+	    var [x, y] = orig.split('-');
+		var res = randomOffset(x, maxX) + '-' + randomOffset(y, maxY);
+		if (res == orig) {
+		    return getTarget(orig, maxX, maxY);
+		} else {
+		    return res;
+		}
+	}
+
+    function getMove() {
+	    if (Math.random() < niceness) {
+		    return 'c';
+		}
+        if (Math.random() < meanness) {
+		    return 'd';
+		}
+		return prevMove;
+	}
+
+    function getMsg(msg) {
+	   var [target, maxX, maxY, om, nice, mean] = msg.data.split(' ');
+       if (om == 'x') {
+	       om = prevMove;
+	   }
+	   var mv = getMove();
+
+	   if (fs < 0.1) {
+		   niceness = parseFloat(nice);
+		   meanness = parseFloat(mean);
+		   fs = 0.1;
+		   resizeSelf(fs);
+		   mv = 'x';
+	   } else {
+			   if (om == 'c' && mv == 'c') {
+				   fs = fs + 0.15;
+			   } else if (om == 'd' && mv == 'c') {
+				   fs = fs - 0.55;
+			   } else if (om = 'c' && mv == 'd') {
+				   fs = fs + 0.55;
+			   } else {
+				   fs = fs - 0.1;
+			   }	
+       }
+       if (mv == 'd') {
+           if (Math.random() < 0.5) {
+	           if (Math.abs(meanness - parseFloat(mean)) < 0.01) {
+	               fs = 0;
+		       }
+	       }
+	       if (Math.random() < 0.1) {
+		       fs = 0
+           }
+       } else {	
+           if (Math.random() < 0.01) {
+	           if (Math.abs(meanness - parseFloat(mean)) < 0.01) {
+	               fs = 0;
+		       }
+	       }
+	       if (Math.random() < 0.01) {
+		       fs = 0
+           }
+       }       	
+
+	   if (fs > 1) {
+	       fs = 1
+	   }
+	   if (fs < 0) {
+	       fs = 0
+	   }
+
+       prevMove = om;
+	   target = getTarget(target, maxX, maxY);
+	   msg.source.postMessage(target + " " + maxX + " " + maxY + " " + mv + " " + niceness + " " + meanness, '*'); 
+	   resizeSelf(fs);
+	}
+
+	window.addEventListener('load', resizeSelf, fs);
+	window.addEventListener('message', getMsg, false);
+
+</script>
+  </body>
+</html>
