@@ -1,0 +1,2 @@
+# slowca
+slow cellular automaton
